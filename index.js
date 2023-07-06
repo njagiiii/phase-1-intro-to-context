@@ -1,91 +1,80 @@
 // Your code here
-function createEmployeeRecord(arr){
-    let arroObj ={
-        firstName:arr[0],
-        familyName:arr[1],
-        title:arr[2],
-        payPerHour:arr[3],
-        timeInEvents:[],
-        timeOutEvents:[],
+function createEmployeeRecord(Arr){
+    const myData = {
+        firstName: Arr[0],
+        familyName: Arr[1],
+        title: Arr[2],
+        payPerHour: Arr[3],
+        timeInEvents: [],
+        timeOutEvents: []
     }
-    return arroObj;
-}
-function createEmployeeRecords(employeesArr){
-    let newArrObj = [];
-    employeesArr.forEach(employee => {
-        let newObj = createEmployeeRecord(employee);
-        newArrObj.push(newObj)
-    })
-    return newArrObj
-}
-function createTimeInEvent(date){
-    let datesplit = date.split('');
-    let addTimeIn ={
-        type:"TimeIn",
-        hour:parseInt(datesplit[1],10),
-        date:datesplit[0],
+    return myData
+  }
+
+  function createEmployeeRecords(thisArg){
+    const myRecords = thisArg.map(createEmployeeRecord)
+    return myRecords
+  }
+
+  function createTimeInEvent(record, time){
+    const timeIn = {
+        type: "TimeIn",
+        hour: parseInt(time.split(" ")[1]),
+        date: time.split(" ")[0]
     }
-    this.timeInEvents.push(addTimeIn)
-    return this;
-}
-function createTimeOutEvent(addTimeOut){
-    return this;
-}
-function hoursWorkedOnDate(selectDate){
-    let timeInEventsArr = this.timeInEvents
-    let timeOutEventsArr = this.timeOutEvents
-    let dayTimeIn;
-    let dayTimeOut;
-    timeInEventsArr.map(item =>{
-        if(item.date === selectDate){
-            dayTimeIn =item.hour
+    record.timeInEvents.push(timeIn)
+    return record
+  }
+
+  function createTimeOutEvent(record, time){
+    const timeOut = {
+        type: "TimeOut",
+        hour: parseInt(time.split(" ")[1]),
+        date: time.split(" ")[0]
+    }
+    record.timeOutEvents.push(timeOut)
+    return record
+  }
+
+  function hoursWorkedOnDate(record, date){
+    let hours = []
+    record.timeOutEvents.map(e => {
+        if(e.date === date){
+            hours.push(e.hour)
         }
     })
-    timeOutEventsArr.map(item => {
-        if(item.date === selectDate){
-            dayTimeOut =item.hour
+    record.timeInEvents.map(e => {
+        if(e.date === date){
+            hours.push(e.hour)
         }
     })
-    let hoursWorked = Math.ceil((dayTimeOut-dayTimeIn)/100)
-    return hoursWorked
-}
+    console.log(hours)
+    return (hours[0] - hours[1]) * 0.01
+  }
 
-function wagesEarnedOnDate(selectDate){
-    const hours = hoursWorkedOnDate.bind(this);
-    let hoursWork = hours(selectDate);
-    let wages = hoursWork*this.payPerHour;
-    return wages;
-}
-function findEmployeeByFirstName(srcArray,firstName){
-    let matchFind = srcArray.filter (item=>{
-        if(item.firstName === firstName){
-            return item
-        }
+  function wagesEarnedOnDate(record, date){
+    const hours = hoursWorkedOnDate(record, date)
+    const rate = record.payPerHour
+    return hours * rate
+  }
+
+  function allWagesFor(record){
+    console.log(record)
+    const dates = []
+    const wages = []
+    record.timeInEvents.map(e => dates.push(e.date))
+    dates.map(date => wages.push(wagesEarnedOnDate(record, date)))
+    return wages.reduce((a, b) => a+b)
+  }
+
+  function findEmployeeByFirstName(srcArray, firstName) {
+    return srcArray.find(record => record.firstName === firstName)
+  }
+
+  function calculatePayroll(thisArg){
+    const wages = []
+    thisArg.map(record => {
+        wages.push(allWagesFor(record))
     })
-    return matchFind
-}
-function calculatePayroll(arr){
-    let eachWage=[]
-    arr.map(obj => {
-        let x = allWagesFor.call(obj);
-        eachWage.push(x)
-    })
-    let totalWages =eachWage.reduce((accum, item) => {
-        return accum + item;
-    })
-    return totalWages
-}
-
-
-const allWagesFor = function () {
-    const eligibleDates = this.timeInEvents.map(function (e) {
-        return e.date
-    })
-
-    const payable = eligibleDates.reduce(function (memo, d) {
-        return memo + wagesEarnedOnDate.call(this, d)
-    }.bind(this), 0) // <== Hm, why did we need to add bind() there? We'll discuss soon!
-
-    return payable
-}
-
+    return wages.reduce((a, b) => a+b)
+  }
